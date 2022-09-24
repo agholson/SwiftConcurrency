@@ -8,6 +8,7 @@
 import SwiftUI
 import Combine
 
+// From https://www.youtube.com/watch?v=fTtaEYo14jI
 class DownloadAsyncImageLoader {
     
     let url = URL(string: "https://picsum.photos/200")!
@@ -99,9 +100,10 @@ class DownloadImageAsyncViewModel: ObservableObject {
         let image = try? await loader.downloadWithAsync()
         
         // Set this as the image
-        await MainActor.run {
+        await MainActor.run(body: {
             self.image = image
-        }
+            
+        })
 
     }
     

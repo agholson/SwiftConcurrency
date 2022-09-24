@@ -73,3 +73,81 @@ Code within the View itself, which allows us to call the image:
     }
 }
 ```
+
+# Priority Levels
+There are different priority levels for the execution of tasks. If no priority is given to a Task,
+then it takes the highest priority level. However, we
+can control the priority level for Tasks using a modifier as shown below:
+```
+Task(priority: .userInitiated) {
+    print("USER INITIATED : \(Thread.current) : \(Task.currentPriority)")
+} 
+```
+The higher the TaskPriority number, the more likely it will be prioritized:
+```
+MEDIUM : <_NSMainThread: 0x600003354000>{number = 1, name = main} : TaskPriority(rawValue: 21)
+USER INITIATED : <_NSMainThread: 0x600003354000>{number = 1, name = main} : TaskPriority(rawValue: 25)
+HIGH : <_NSMainThread: 0x600003354000>{number = 1, name = main} : TaskPriority(rawValue: 25)
+LOW : <_NSMainThread: 0x600003354000>{number = 1, name = main} : TaskPriority(rawValue: 17)
+UTILITY : <_NSMainThread: 0x600003354000>{number = 1, name = main} : TaskPriority(rawValue: 17)
+BACKGROUND : <_NSMainThread: 0x600003354000>{number = 1, name = main} : TaskPriority(rawValue: 9)
+```
+
+If you have a long-runnning operation, then you can let other threads waiting go ahead like this:
+```
+Task(priority: .userInitiated) {
+    
+    await Task.yield()
+    
+    print("USER INITIATED : \(Thread.current) : \(Task.currentPriority)")
+}
+```
+
+# Cancelling Tasks
+If you have a user click through a bunch of pages, you don't want to load images or other data
+for the pages the user no longer remains upon. Rather, you need to cancel that Task. 
+
+First grab a reference to the Task. You can do this by defining it up top:
+```
+task: Task = nil
+```
+However, that responds in a GenericParameter error (`Generic parameter 'Success' could not be inferred`). Therefore, we 
+need to tell it what type of error to make instead. Accomplish this by copying the type shown by `OPTION + CLICKING` an 
+object like the below (then you can delete
+assignment here):
+![Option clicking a task](img/optionClickingTask.png)
+So the new declaration of the Task becomes like this:
+```
+let task:  Task<(), Never>? = nil
+```
+
+Then change it to match your code as a `@State` property, and set the Task equal to this:
+```
+@State private var fetchImageTask: Task<(), Never>? = nil 
+...
+fetchImageTask = Task {
+    await viewModel.fetchImage()
+}
+```
+
+Now, you can add an `onDissapear` modifier to cancel the referenced task:
+```
+.onDisappear(perform: {
+    fetchImageTask?.cancel()
+})
+```
+However, an even smoother method for this brought into iOS 15 is the `.task` modifier, which 
+handles all of the code above, the `@State` code, the `.onAppear`, and `.onDisappear` cancellation code in one stroke:
+```
+.task {
+  await viewModel.fetchImage()
+}
+```
+
+However, for long-running tasks, we might run into the point, where it does not cancel on its own. For these, we need
+to check, if the task was cancelled. For example, you might have a loop like this:
+```
+for image in imageArray {
+    try Task.checkCancellation() 
+}
+```
