@@ -151,3 +151,28 @@ for image in imageArray {
     try Task.checkCancellation() 
 }
 ```
+
+# Concurrent Execution
+In a Task, most of the time, the code runs serially. However, you can use `async let` to run different asynchronous calls at the same time.
+Although, this will execute at the same, it will not add the images to the `@State` property until all of the images finish loading.
+```
+Task {
+    do {
+        // Execute at same time
+        async let fetchImage1 = fetchImage()
+        async let fetchImage2 = fetchImage()
+        async let fetchImage3 = fetchImage()
+        async let fetchImage4 = fetchImage()
+        
+        // Await all four at same time
+        // If any fail, enter the catch block
+        let (image1, image2, image3, image4) = await (try fetchImage1, try fetchImage2, try fetchImage3, try fetchImage4)
+        
+        // If it makes it here, then the images are here
+        self.images.append(contentsOf: [image1, image2, image3, image4])
+    catch {
+    
+    }
+}
+```
+
