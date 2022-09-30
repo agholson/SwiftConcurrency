@@ -176,3 +176,84 @@ Task {
 }
 ```
 
+# TaskGroups
+With TaskGroups, you can more effectively organize multiple asnychronous calls. They still wait until all are complete, like the other, but
+this time, you more efficiently write the code:
+```
+func fetchImagesWithTaskGroup() async throws -> [UIImage] {
+    // Create an array of strings
+    let urlStrings = [
+        "https://picsum.photos/300",
+        "https://picsum.photos/300",
+        "https://picsum.photos/300",
+        "https://picsum.photos/300",
+        "https://picsum.photos/300",
+    ]
+    
+   // Return from the outer function the images as well - of portion tells it what to return from the inner function
+    return try await withThrowingTaskGroup(of: UIImage?.self) { group in
+        // Create blank array to hold returned images
+        var images: [UIImage] = []
+        
+        // Tell compiler how many elements to reserve for this array
+        images.reserveCapacity(urlStrings.count)
+        
+        // Loop through the URLs
+        for urlString in urlStrings {
+            // Add a groupTask for each one
+            group.addTask(priority: .high) {
+                try? await self.fetchImage(urlString: urlString)
+            }
+        }
+        
+        // Waits for all the tasks to return, if any fail, then it does not run
+        for try await image in group {
+            if let image = image {
+                // Whenever one comes through, it immediately enters group, add it
+               images.append(image)
+            }
+        }
+        
+        // Waits for all the images to be added, then returns
+        return images
+    }
+}
+```
+Because we know how many images should be in the array, we can tell the compiler to reserve that amount of space. This 
+makes the code more efficient, because it does not have to assume it needs to hold 10,000 images etc. 
+```
+images.reserveCapacity(urlStrings.count)
+```
+
+# Continuations
+From: https://www.youtube.com/watch?v=Tw_WLMIfEPQ
+Want to run asynchronous code on non-async code? Or code from an SDK you didn't write? You can with Continuations.
+
+See `CheckedContinuationBootcamp` for the full reference file on how to implement this.
+
+With continuations, you must continue exactly once; no more, no less. 
+```
+func getData2(url: URL) async throws -> Data {
+    // Suspends asnychronous context, so it can run non-asynchronous code
+    // Must call resume on the continuation at least once
+    return try await withCheckedThrowingContinuation { continuation in
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            // If data never received, then continuation never takes place
+            if let data = data {
+                // When it finishes here, it continues the task originally in, or resume the continuation and exit this completion handler
+                continuation.resume(returning: data)
+            }
+            // Handle the error, if data did not come back
+            else if let error = error {
+                continuation.resume(throwing: error)
+            }
+            // Else if no data returned, and no error returned, then handle this
+            else {
+                continuation.resume(throwing: URLError(.badServerResponse   ))
+            }
+        }
+        .resume() // Executes the DataTask here
+    }
+}
+``` 
+
