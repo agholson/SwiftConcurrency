@@ -9,6 +9,11 @@
 /* Begin PBXBuildFile section */
 		754AB3EB28E0F2C10099481F /* TaskGroupBootcamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754AB3EA28E0F2C10099481F /* TaskGroupBootcamp.swift */; };
 		754AB3ED28E289E40099481F /* CheckedContinuationBootcamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754AB3EC28E289E40099481F /* CheckedContinuationBootcamp.swift */; };
+		7558746828F8C5D0008F4F0A /* diagnostics.png in Resources */ = {isa = PBXBuildFile; fileRef = 7558746728F8C5D0008F4F0A /* diagnostics.png */; };
+		7558746A28F8C7D6008F4F0A /* accessRace.png in Resources */ = {isa = PBXBuildFile; fileRef = 7558746928F8C7D6008F4F0A /* accessRace.png */; };
+		7558746C28F8C809008F4F0A /* accessInCode.png in Resources */ = {isa = PBXBuildFile; fileRef = 7558746B28F8C809008F4F0A /* accessInCode.png */; };
+		75D3E09728F3394300E76D1A /* ActorsBootcamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D3E09628F3394300E76D1A /* ActorsBootcamp.swift */; };
+		75D3E09928F3423700E76D1A /* editScheme.png in Resources */ = {isa = PBXBuildFile; fileRef = 75D3E09828F3423700E76D1A /* editScheme.png */; };
 		75D9595B28CEB8DB00B7A84A /* SwiftConcurrencyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9595A28CEB8DB00B7A84A /* SwiftConcurrencyApp.swift */; };
 		75D9595D28CEB8DB00B7A84A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9595C28CEB8DB00B7A84A /* ContentView.swift */; };
 		75D9595F28CEB8DC00B7A84A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75D9595E28CEB8DC00B7A84A /* Assets.xcassets */; };
@@ -19,11 +24,17 @@
 		75E132D328DFC13F002A0C89 /* AsyncLetBootCamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E132D228DFC13F002A0C89 /* AsyncLetBootCamp.swift */; };
 		75E3712A28D7AF720079B875 /* AsyncAwaitBootCamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E3712928D7AF720079B875 /* AsyncAwaitBootCamp.swift */; };
 		75E3712C28D7C4D00079B875 /* TaskBootCamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E3712B28D7C4D00079B875 /* TaskBootCamp.swift */; };
+		75F008A928E8BEF100DBCA1E /* StructClassActorBootcamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F008A828E8BEF100DBCA1E /* StructClassActorBootcamp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		754AB3EA28E0F2C10099481F /* TaskGroupBootcamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskGroupBootcamp.swift; sourceTree = "<group>"; };
 		754AB3EC28E289E40099481F /* CheckedContinuationBootcamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckedContinuationBootcamp.swift; sourceTree = "<group>"; };
+		7558746728F8C5D0008F4F0A /* diagnostics.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = diagnostics.png; sourceTree = "<group>"; };
+		7558746928F8C7D6008F4F0A /* accessRace.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = accessRace.png; sourceTree = "<group>"; };
+		7558746B28F8C809008F4F0A /* accessInCode.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = accessInCode.png; sourceTree = "<group>"; };
+		75D3E09628F3394300E76D1A /* ActorsBootcamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActorsBootcamp.swift; sourceTree = "<group>"; };
+		75D3E09828F3423700E76D1A /* editScheme.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = editScheme.png; sourceTree = "<group>"; };
 		75D9595728CEB8DB00B7A84A /* SwiftConcurrency.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftConcurrency.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D9595A28CEB8DB00B7A84A /* SwiftConcurrencyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftConcurrencyApp.swift; sourceTree = "<group>"; };
 		75D9595C28CEB8DB00B7A84A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -36,6 +47,7 @@
 		75E132D228DFC13F002A0C89 /* AsyncLetBootCamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncLetBootCamp.swift; sourceTree = "<group>"; };
 		75E3712928D7AF720079B875 /* AsyncAwaitBootCamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncAwaitBootCamp.swift; sourceTree = "<group>"; };
 		75E3712B28D7C4D00079B875 /* TaskBootCamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskBootCamp.swift; sourceTree = "<group>"; };
+		75F008A828E8BEF100DBCA1E /* StructClassActorBootcamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructClassActorBootcamp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +91,8 @@
 				75E132D228DFC13F002A0C89 /* AsyncLetBootCamp.swift */,
 				754AB3EA28E0F2C10099481F /* TaskGroupBootcamp.swift */,
 				754AB3EC28E289E40099481F /* CheckedContinuationBootcamp.swift */,
+				75F008A828E8BEF100DBCA1E /* StructClassActorBootcamp.swift */,
+				75D3E09628F3394300E76D1A /* ActorsBootcamp.swift */,
 				75D9595E28CEB8DC00B7A84A /* Assets.xcassets */,
 				75D9596028CEB8DC00B7A84A /* Preview Content */,
 			);
@@ -96,6 +110,10 @@
 		75E132CF28DFB88A002A0C89 /* img */ = {
 			isa = PBXGroup;
 			children = (
+				75D3E09828F3423700E76D1A /* editScheme.png */,
+				7558746728F8C5D0008F4F0A /* diagnostics.png */,
+				7558746B28F8C809008F4F0A /* accessInCode.png */,
+				7558746928F8C7D6008F4F0A /* accessRace.png */,
 				75E132D028DFB897002A0C89 /* optionClickingTask.png */,
 			);
 			path = img;
@@ -159,6 +177,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7558746C28F8C809008F4F0A /* accessInCode.png in Resources */,
+				7558746A28F8C7D6008F4F0A /* accessRace.png in Resources */,
+				7558746828F8C5D0008F4F0A /* diagnostics.png in Resources */,
+				75D3E09928F3423700E76D1A /* editScheme.png in Resources */,
 				75E132D128DFB897002A0C89 /* optionClickingTask.png in Resources */,
 				75D9596228CEB8DC00B7A84A /* Preview Assets.xcassets in Resources */,
 				75D9595F28CEB8DC00B7A84A /* Assets.xcassets in Resources */,
@@ -175,7 +197,9 @@
 				75D9596C28D012DE00B7A84A /* DownloadImageAsync.swift in Sources */,
 				75E3712C28D7C4D00079B875 /* TaskBootCamp.swift in Sources */,
 				75D9596928CEB95800B7A84A /* DoCatchTryThrowsBootCamp.swift in Sources */,
+				75D3E09728F3394300E76D1A /* ActorsBootcamp.swift in Sources */,
 				754AB3ED28E289E40099481F /* CheckedContinuationBootcamp.swift in Sources */,
+				75F008A928E8BEF100DBCA1E /* StructClassActorBootcamp.swift in Sources */,
 				75D9595D28CEB8DB00B7A84A /* ContentView.swift in Sources */,
 				75E3712A28D7AF720079B875 /* AsyncAwaitBootCamp.swift in Sources */,
 				75D9595B28CEB8DB00B7A84A /* SwiftConcurrencyApp.swift in Sources */,

@@ -88,7 +88,7 @@ struct AsyncLetBootCamp: View {
     func fetchImage() async throws -> UIImage {
         do {
             // Call the photo API here
-            let (data, _) = await try URLSession.shared.data(from: url, delegate: nil)
+            let (data, _) = try await URLSession.shared.data(from: url, delegate: nil)
             
             if let image = UIImage(data: data) {
                 return image

@@ -256,4 +256,254 @@ func getData2(url: URL) async throws -> Data {
     }
 }
 ``` 
+# Types in Memory
+From: https://www.youtube.com/watch?v=-JLenSTKEcA
+The way classes, structs, strings, integers, and arrays all behave in memory are quite different than each other.
+**Value Types**
+- Strings, structs,ENUMS, etc. pass the values to other strings or structs.
+- Stored in the stack
+- Much faster
+- Thread safe, because on its own stack for that thread
+- New copy of data created/ passed to another variable
 
+**Reference Types**
+- Class, function, Actors
+- Stored in the heap
+- Slower, but synchronized 
+- Not thread safe
+- Passes a new reference (pointer) to the class
+
+**Stack**
+- Last in, first out
+  - Add things to the stack, whatever gets added last, must get out first
+- Stores value types
+- Variables stored directly to memory with fast access 
+- Each thread has its own stack 
+
+**Heap**
+- Stores reference types
+- Shared across threads
+- 
+
+## Structs 
+- Based on values
+- Can be mutated
+- Stored in the stack
+- Used for data models and Views
+
+When you create a new struct based on an old one, you pass the values of that struct to a new
+struct versus passing a reference to the struct as happens with classes.
+
+```
+let objectA = MyStruct(title: "Starting title!")
+print("ObjectA: ", objectA.title)
+
+print("Passed the VALUES of objectA to objectB")
+var objectB = objectA
+
+print("ObjectB: ", objectB.title)
+
+objectB.title = "Second title"
+print("ObjectB title changed")
+
+print("ObjectA: ", objectA.title)
+print("ObjectB: ", objectB.title)
+```
+Results in:
+```
+ObjectA:  Starting title!
+ObjectB:  Starting title!
+ObjectB title changed
+ObjectA:  Starting title!
+ObjectB:  Second title
+
+```
+
+Whenevery you modify a struct's contents, you actually modify the entire struct itself/
+create a new struct. 
+
+## Classes
+- Based on references (instance of class) 
+- Cannot be mutated, but change references inside
+- Stored in the heap
+- Inherit from other classes
+- Great for ViewModels
+
+In contrast, when you modify a class, you modify that class in the heap. Therefore, if you set a 
+second class equal to a first class, both classes reference the same point in memory.
+```
+private func classTest1() {
+    print("classTest1")
+    let objectA = MyClass(title: "Starting title!")
+    print("ObjectA: ", objectA.title)
+    
+    print("Pass the REFERENCES from objectA to objectB")
+    let objectB = objectA
+    print("ObjectB: ", objectB.title)
+    
+    // Changes the title inside the object
+    objectB.title = "Second title"
+    print("ObjectB title changed")
+    
+    print("ObjectA: ", objectA.title)
+    print("ObjectB: ", objectB.title)
+}
+``` 
+Results in:
+```
+classTest1
+ObjectA:  Starting title!
+Pass the REFERENCES from objectA to objectB
+ObjectB:  Starting title!
+ObjectB title changed
+ObjectA:  Second title
+ObjectB:  Second title
+```
+Notice in the end that both classes have the same title, even though we only changed the title
+for objectB? Because objectB was based on objectA, or based on the reference to objectA (versus passing the values),
+they modify the same spot in the heap. 
+
+## Automatic Reference Counting (ARC)
+Automatic Reference Counting (ARC) counts how many instances of a class remain in memory. Each object
+has its own reference count parameter that knows how many times this object is being used in memory. If two places
+in the code are using it, then the ARC should be set at 2. 
+
+This becomes a problem, if some code executes, but the user navigates to a different page. The user no longer cares about the results 
+to the previous code. However, that code still fires/ launches, because it is referenced in memory. Therefore, we need
+to use weak references, so that the ARC drops to zero, if the user launches to a different page like with this code:
+```
+func downloadWithEscaping(completionHandler: @escaping (_ image: UIImage?, _ error: Error?) -> ()) {
+    // The data task launches as soon as it reaches the code, the portion in braces, executes once data gets returned
+    // With weak self, if user is on another page, then don't load this
+    URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+        // Returns an image or an optional image
+        let image = self?.handleResponse(data: data, response: response)
+        
+        // If successful, then call the completionHandler with the image
+        completionHandler(image, error)
+        
+    }
+    .resume() // Makes start
+}
+``` 
+
+## Actors
+- Same as class, but thread safe
+- Must work in async/ in/ out of 
+- Great for shared DataManager services, which connects to databases, or makes network calls
+
+Actors are identical to classes, except they are thread-safe. This means that two different pieces of 
+code running on two different threads can safely modify the same actor in the heap. In contrast, with classes
+one code could erase the class itself, while another wanted to change a portion of it. 
+
+# Actor Helpfullness 
+From: https://www.youtube.com/watch?v=UUdi137FySk
+## Data Race
+The file `ActorsBootcamp` simmulates what happens, if different threads try updating the same referenced
+class at the same time.
+
+## Thread Sanitizer
+The Thread Sanitizer within Xcode (off by default) can help us realize any thread-potential problems updating our app.
+
+Turn it on by clicking the project icon at the top -> edit scheme. Then check the box for the Thread Sanitizer under the Run section:
+![Edit scheme](img/editScheme.png)
+![Thread Debugger](diagnostics.png)
+
+If you run it again, if there are problems with threads, then you will likely see a print-out like this in the debug console:
+```
+WARNING: ThreadSanitizer: Swift access race (pid=74206)
+  Modifying access of Swift variable at 0x000110451590 by thread T7:
+    #0 MyDataManager.data.modify <compiler-generated> (SwiftConcurrency:arm64+0x10001b864)
+    #1 MyDataManager.getRandomData() ActorsBootcamp.swift:18 (SwiftConcurrency:arm64+0x10001ba3c)
+    #2 closure #1 in closure #2 in HomeView.body.getter ActorsBootcamp.swift:49 (SwiftConcurrency:arm64+0x10001db64)
+    #3 partial apply for closure #1 in closure #2 in HomeView.body.getter <compiler-generated> (SwiftConcurrency:arm64+0x100023cf0)
+    #4 thunk for @escaping @callee_guaranteed () -> () <compiler-generated> (SwiftConcurrency:arm64+0x10001dee8)
+    #5 __tsan::invoke_and_release_block(void*) <null>:17526628 (libclang_rt.tsan_iossim_dynamic.dylib:arm64+0x7b690)
+<NSThread: 0x10f8453c0>{number = 3, name = (null)}
+    #6 _dispatch_client_callout <null>:17526628 (libdispatch.dylib:arm64+0x5d58)
+
+  Previous modifying access of Swift variable at 0x000110451590 by thread T6:
+    #0 MyDataManager.data.modify <compiler-generated> (SwiftConcurrency:arm64+0x10001b864)
+<NSThread: 0x10f8453c0>{number = 3, name = (null)}
+    #1 MyDataManager.getRandomData() ActorsBootcamp.swift:18 (SwiftConcurrency:arm64+0x10001ba3c)
+    #2 closure #1 in closure #2 in BrowseView.body.getter ActorsBootcamp.swift:77 (SwiftConcurrency:arm64+0x1000204ec)
+    #3 partial apply for closure #1 in closure #2 in BrowseView.body.getter <compiler-generated> (SwiftConcurrency:arm64+0x1000236c4)
+    #4 thunk for @escaping @callee_guaranteed () -> () <compiler-generated> (SwiftConcurrency:arm64+0x10001dee8)
+    #5 __tsan::invoke_and_release_block(void*) <null>:17526628 (libclang_rt.tsan_iossim_dynamic.dylib:arm64+0x7b690)
+    #6 _dispatch_client_callout <null>:17526628 (libdispatch.dylib:arm64+0x5d58)
+    
+  Thread T7 (tid=3869876, running) is a GCD worker thread
+
+  Thread T6 (tid=3869875, running) is a GCD worker thread
+
+SUMMARY: ThreadSanitizer: Swift access race <compiler-generated> in MyDataManager.data.modify
+```
+
+Better yet, under the warnings, it will show us where the data race occurs. A data race means two threads
+are modifying the same place (pointer like 0x000110451590 shown above) on the heap:
+![Access race](img/accessRace.png)
+![Access in code](img/accessInCode.png)
+
+### Fix for Thread Race
+You can implement a custom lock with a completion handler in order to ensure only one thread can 
+access the same pointer in the heap at a given time. All of the threads must queue up to use the single lock:
+```
+let lock = DispatchQueue(label: "com.MyApp.MyDataManager")
+
+// Escaping closure captures non-escaping parameter 'completionHandler' - need to declare the completionHandler as escaping
+func getRandomData(completionHandler: @escaping (_ title: String?) -> ()) { // Returns Void now, except completionHandler returned
+    // Uses the queue above in the debugger
+    lock.async {
+        self.data.append(UUID().uuidString)
+        print(Thread.current)
+        
+        // Return a random element from the array
+//            return self.data.randomElement()
+        // Returns the data via the completionHandler here
+        completionHandler(self.data.randomElement())
+    }
+}
+```
+### Asynchronous Fix for Thread Race
+Meanwhile, the new actor can do the same code asynchronously like this:
+```
+actor MyActorDataManager {
+    // Make this class a singleton (not recommended like this)
+    static let instance = MyActorDataManager()
+    private init() {}
+    
+    var data: [String] = []
+  
+    func getRandomData() -> String? { // Returns Void now, except completionHandler returned
+            self.data.append(UUID().uuidString)
+            print(Thread.current)
+            return self.data.randomElement()
+    }
+}
+```
+Then you call the async code to update the title state object like this:
+```
+// Every 0.1 seconds we receive new value from the timer publisher
+.onReceive(timer) { _ in // Does nothing with new value
+    
+    Task {
+        // Call the asynchronous function
+        if let title = await manager.getRandomData() {
+            await MainActor.run(body: {
+                self.text = title
+            })
+        }
+    }
+}
+```
+### Pieces not Async
+If you want a portion of your Actor to not be asynchronous, then you can change it so that you do not need to wait for it like this:
+```
+nonisolated func getSavedData() -> String {
+    return "NEW DATA"
+}
+```
+Similarly if you want a property outside of the asynchronous context, then you can define that like this:
+```
+nonisolated let myRandomText = "asdfsdfa"
+```
