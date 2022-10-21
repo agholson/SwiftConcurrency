@@ -1,5 +1,5 @@
 #  SwiftConcurrency
-Swift Concurrency notes from Swiftful Thinking: 
+Swift Concurrency notes from the amazing Nick Sarno at Swiftful Thinking: 
 https://www.youtube.com/watch?v=ss50RX7F7nE&list=PLwvDm4Vfkdphr2Dl4sY4rS9PLzPdyi8PM&index=2
 
 
@@ -507,3 +507,114 @@ Similarly if you want a property outside of the asynchronous context, then you c
 ```
 nonisolated let myRandomText = "asdfsdfa"
 ```
+# Global Actors
+From: https://www.youtube.com/watch?v=BRBhMrJj5f4
+You can create your own custom global actor in order to safely execute code on the same thread like this:
+```
+@globalActor struct MyFirstGlobalActor {
+    // Conforms to the GlobalActor protocol through a shared instance of the actor MyNewDataManager
+    static var shared = MyNewDataManager()
+}
+
+actor MyNewDataManager {
+    
+    func getDataFromDatabase() -> [String] {
+        return ["One", "Two", "Three", "Four", "Five"]
+    }
+}
+
+```
+Then, it's possible to use a custom decorator to isolate asynchronous methods only to that actor:
+```
+    // Access the actor via a reference to the singleton
+    let manager = MyFirstGlobalActor.shared
+    
+    // Only allow this to run within the global actor via isolation
+    @MyFirstGlobalActor func getData() async {
+        // HEAVY COMPLEX METHODS
+        
+        // Get the array of strings from the database
+        let data = await manager.getDataFromDatabase()
+        self.dataArray = data
+    }
+
+```
+In addition, you can ensure that code runs on the main thread via the `MainActor` (also a global actor):
+```
+@MainActor
+func getData() {
+    // HEAVY COMPLEX METHODS
+    Task {
+        // Get the array of strings from the database
+        let data = manager.getDataFromDatabase()
+        self.dataArray = data
+    }
+}
+```
+In order to update UI code safely, you need to be on the `MainActor` you can enforce this/ generate warnings about this
+by using the decorator before the `@Published` property:
+```
+@MainActor @Published var dataArray: [String] = []
+```
+This will then create compiler errors, whenever we update this not on the main thread:
+```
+@MainActor @Published var dataArray: [String] = []
+```
+![Compiler warning](img/mainActorCompileWarning.png)
+
+# Sendable Protocol 
+From: https://www.youtube.com/watch?v=wSmTbtOwgbE
+The Sendable protocol makes it so that non-thread-safe classes can be sent into thread-safe Actors.
+Otherwise, you could pass an actor a class, then a portion of code could update the class elsewhere, and
+cause issues.
+
+You can mark structs and classes as Sendable by having them conform to the Sendable protocol like this:
+```
+struct MyUserInfo: Sendable {
+    let name: String
+    
+}
+```
+Meanwhile, you need to make a class final, if you want it to conform to the sendable protocol. In the example,
+all of the variables are `let` constants, so they will never change within this class.
+```
+// Final class prevents other classes from inheriting from this class, which allows
+// it to conform to the sendable protocol
+final class MyClassUserInfo: Sendable {
+    let name: String
+    
+    // Create an initializer for the class as required
+    init(name: String) {
+        self.name = name
+    }
+}
+```
+Meanwhile, if you want to have a class with mutable properties (`var`s versus `let` constants), you must create
+your own queue, or lock, which forces only one thread to update the properties at a time. Therefore, two threads 
+cannot mess with the class simultaneously. You make it, so that the property cannot be changed like normal either
+through the use of a `private var`.
+
+Note that you also mark it as an unchecked Sendable protocol to tell the compiler that you will check this yourself.
+```
+final class MyClassUserInfo: @unchecked Sendable {
+   private  var name: String
+    
+    let queue = DispatchQueue(label: "com.MyAppName.MyClassUserInfo")
+    
+    // Create an initializer for the class as required
+    init(name: String) {
+        self.name = name
+    }
+    
+    func updateName(newName: String) {
+        // Only update the code on its own queue (lock)
+        queue.async {
+            self.name = newName
+        }
+    }
+}
+```
+
+However, Nick does not recommend this approach. Rather, you should use `struct`s instead. There may also be
+a performance benefit to marking your `struct`s, which are thread-safe by default as value-types as conforming
+to the Sendable protocol. 
