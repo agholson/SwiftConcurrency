@@ -618,3 +618,60 @@ final class MyClassUserInfo: @unchecked Sendable {
 However, Nick does not recommend this approach. Rather, you should use `struct`s instead. There may also be
 a performance benefit to marking your `struct`s, which are thread-safe by default as value-types as conforming
 to the Sendable protocol. 
+
+# Convert @Published to Async
+From: https://www.youtube.com/watch?v=ePPm2ftSVqw. See `AsyncPublisherBootcamp.swift` for the full code.
+
+You can make the values of @Published properties asynchronous in the following fashion.
+ 
+Separate class, which updates a property asynchronously:
+```
+class AsyncPublisherDataManager {
+    @Published var myData: [String] = []
+    
+    func addData() async {
+        myData.append("Apple")
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        myData.append("Cherry")
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        myData.append("Bannana")
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        myData.append("Watermellon")
+    }
+}
+```
+
+Another class, which has a property listen to changes in the `myData` property in the first class. Note
+the `for` loop below, which contains the core code needed to subscribe to the manager's dataArray property.
+```
+class AsyncPublisherBootcampViewModel: ObservableObject {
+    // Makes it, so this always gets updated on the MainActor
+    @MainActor @Published var dataArray: [String] = []
+    let manager = AsyncPublisherDataManager()
+    
+    // Used for Combine
+    var cancellables = Set<AnyCancellable>()
+    
+    init() {
+        addSubscribers()
+    }
+    
+    // This will update the published dataArray as information comes into it
+    // It subscribes to the myDataArray for any changes
+    private func addSubscribers() {
+        Task {
+            // Subscribes to the Publisher asynchronously
+            // Unlike normal for loop that executes immediately, this one awaits each value first
+            for await value in manager.$myData.values {
+                await MainActor.run {
+                    self.dataArray = value
+                }
+            }
+        }
+    }
+``` 
+However, you should also note that unless you add a break to the for loop, it will never stop, nor execute any code
+beneath it in the method.
+
+Therefore, if you need to subscribe to multiple properties, then you can create a separate `Task` to perform this work.
+
